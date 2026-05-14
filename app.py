@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import pickle
-from PIL import Image
 
 # ---------------- LOAD MODEL ----------------
 model = pickle.load(open("model.pkl", "rb"))
@@ -16,31 +15,20 @@ st.divider()
 # ---------------- INPUT SECTION ----------------
 st.subheader("📊 Enter Energy Details")
 
-load_kw = st.number_input("⚙️ Load (kW)", value=None)
-monthly_kwh = st.number_input("🔋 Monthly kWh", value=None)
-yearly_kwh = st.number_input("📈 Yearly kWh", value=None)
-tariff_rate = st.number_input("💰 Tariff Rate", value=None)
+load_kw = st.number_input("⚙️ Load (kW)")
+monthly_kwh = st.number_input("🔋 Monthly kWh")
+yearly_kwh = st.number_input("📈 Yearly kWh")
+tariff_rate = st.number_input("💰 Tariff Rate")
 
 st.divider()
 
-# ---------------- IMAGE (OPTIONAL) ----------------
-st.subheader("🖼️ Upload Image (Optional)")
-
-uploaded_file = st.file_uploader("Choose image", type=["jpg", "jpeg", "png"])
-
-if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_container_width=True)
-
-st.divider()
-
-# ---------------- VALIDATION ----------------
+# ---------------- VALIDATION + PREDICTION ----------------
 if st.button("🚀 Predict Savings"):
 
-    if load_kw is None or monthly_kwh is None or yearly_kwh is None or tariff_rate is None:
+    if load_kw == 0 or monthly_kwh == 0 or yearly_kwh == 0 or tariff_rate == 0:
         st.warning("⚠️ Please enter all values before prediction!")
-    else:
 
+    else:
         input_data = {
             "Load_kW": load_kw,
             "Monthly_KWh": monthly_kwh,
