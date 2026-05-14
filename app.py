@@ -1,43 +1,63 @@
 import streamlit as st
 import pandas as pd
 import pickle
+from PIL import Image
 
-# load model
+# ---------------- LOAD MODEL ----------------
 model = pickle.load(open("model.pkl", "rb"))
 columns = pickle.load(open("columns.pkl", "rb"))
 
+# ---------------- HEADER ----------------
 st.title("⚡ Solar Recommendation System")
-st.markdown("💡 ML-based Monthly Savings Prediction")
+st.markdown("💡 AI-based Monthly Savings Prediction")
 
 st.divider()
 
-# ---------------- INPUT (WITH DEFAULT VALUES) ----------------
-load_kw = st.number_input("⚙️ Load (kW)", value=5.0)
-monthly_kwh = st.number_input("🔋 Monthly kWh", value=300.0)
-yearly_kwh = st.number_input("📈 Yearly kWh", value=3600.0)
-tariff_rate = st.number_input("💰 Tariff Rate", value=8.0)
+# ---------------- INPUT SECTION ----------------
+st.subheader("📊 Enter Energy Details")
 
-# ---------------- PREDICTION ----------------
+load_kw = st.number_input("⚙️ Load (kW)", value=None)
+monthly_kwh = st.number_input("🔋 Monthly kWh", value=None)
+yearly_kwh = st.number_input("📈 Yearly kWh", value=None)
+tariff_rate = st.number_input("💰 Tariff Rate", value=None)
+
+st.divider()
+
+# ---------------- IMAGE (OPTIONAL) ----------------
+st.subheader("🖼️ Upload Image (Optional)")
+
+uploaded_file = st.file_uploader("Choose image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_container_width=True)
+
+st.divider()
+
+# ---------------- VALIDATION ----------------
 if st.button("🚀 Predict Savings"):
 
-    input_data = {col: 0 for col in columns}
+    if load_kw is None or monthly_kwh is None or yearly_kwh is None or tariff_rate is None:
+        st.warning("⚠️ Please enter all values before prediction!")
+    else:
 
-    if "Load_kW" in input_data:
-        input_data["Load_kW"] = load_kw
-    if "Monthly_KWh" in input_data:
-        input_data["Monthly_KWh"] = monthly_kwh
-    if "Yearly_KWh" in input_data:
-        input_data["Yearly_KWh"] = yearly_kwh
-    if "Tariff_Rate" in input_data:
-        input_data["Tariff_Rate"] = tariff_rate
+        input_data = {
+            "Load_kW": load_kw,
+            "Monthly_KWh": monthly_kwh,
+            "Yearly_KWh": yearly_kwh,
+            "Tariff_Rate": tariff_rate
+        }
 
-    input_df = pd.DataFrame([input_data])
-    input_df = input_df[columns]
+        input_df = pd.DataFrame([input_data])
 
-    prediction = model.predict(input_df)[0]
+        # match training columns
+        input_df = input_df.reindex(columns=columns, fill_value=0)
 
-    st.success(f"💡 Estimated Monthly Savings: ₹ {prediction:.2f}")
-    st.balloons()
+        prediction = model.predict(input_df)[0]
 
+        st.success(f"💡 Estimated Monthly Savings: ₹ {prediction:.2f}")
+        st.balloons()
+
+# ---------------- FOOTER ----------------
 st.markdown("---")
-st.markdown("⚡ Built with Streamlit + Machine Learning")
+st.markdown("🔧 Built with Streamlit | ⚡ ML Solar Prediction System")
